@@ -1,0 +1,24 @@
+﻿#game-options {
+    font-size: 20px;
+    color: #003300;
+}
+
+#game-canvas
+{
+    position: relative;
+}
+
+#layer1
+{
+    position: absolute; left: 0; top: 0; z-index: 0;
+}
+
+#layer2 
+{
+    position: absolute; left: 0; top: 0; z-index: 1;
+}
+
+.alert
+{
+    color: red;
+}

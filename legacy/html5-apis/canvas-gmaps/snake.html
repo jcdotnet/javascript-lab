@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+    <title> snake (or whatever) on tour </title>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <link href="Styles/Styles.css" rel="stylesheet" />
+    <script src="Scripts/snakeontour.js"></script>
+ 
+</head>
+
+<body>
+    <div id="game-options" >    
+            <label id="lblAddress"> Enter an actual address, city, location or whatever: </label>
+            <input type="text" id="txtAddress" />
+            <input type="button" id="btnNewGame" value="START!"/>
+            <label id="lblMessage" class="alert"></label>
+        <br><br>
+    </div>
+    <div id="game-canvas">
+        <canvas id="layer1"></canvas>
+        <canvas id="layer2"></canvas>
+    </div>
+</body>
+</html>
