@@ -1,12 +1,6 @@
-# html5
+# HTML5 Web APIs Experiments
 
-just testing the new HTML5 elements!  
+This directory contains practical implementations of various Web APIs (Canvas, Geolocation, Storage, etc.). 
 
-Snake game:  
-http://snakeontour.hol.es/    
-
-Yet another gravitron game:  
-http://gravitron.hol.es/  
-
-Emoticonia game:  
-http://emoticonia.hol.es/  
+**Context:**
+These exercises were originally developed in 2015 as a technical exploration of the HTML5 standards. While the APIs remain fundamental to the web today, this code serves as a historical reference of those initial implementations.
