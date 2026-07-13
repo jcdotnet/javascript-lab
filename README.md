@@ -1,8 +1,6 @@
 # JavaScript Lab
 
-This repository centralizes my experiments, proofs of concept (PoCs), and practical exercises involving Vanilla JavaScript and Web APIs.
-
-It serves as a personal workspace to test language features, explore browser capabilities, and maintain historical technical references.
+This is my workspace for experimenting with Vanilla JavaScript and keeping lab and personal scripts organized.
 
 ---
-*Part of my broader "Lab Series" covering .NET, Java/Spring, C++, and modern Web Development.*
+*I keep similar labs for .NET, Java/Spring, C++, and modern Web Development.*
