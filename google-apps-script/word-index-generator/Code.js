@@ -67,7 +67,7 @@ function updateWordIndex() {
         let text =  tabParagraphs[p].getText().trim();
         let coreIdea = '';
 
-        if (text.match(/^[A-Z\- ]+\s+\/[^\/]+\/\s+⭐/i)) { // word + IPA + stars
+        if (text.match(/^[A-Z\- ]+\s+\/[^\/]+\/\s+[⭐\s]+$/i)) { // word + IPA + stars
 
           const textParts = text.split('/')
           const word = textParts[0].trim();
