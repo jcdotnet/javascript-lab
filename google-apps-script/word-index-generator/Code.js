@@ -55,7 +55,6 @@ function updateWordIndex() {
   const seenWords = new Set();
 
   for (const tab of allTabs) {
-    const tabTitle = tab.getTitle().toLowerCase();
 
     if (tab.getId() === indexTab.getId()) continue;
 
@@ -67,7 +66,8 @@ function updateWordIndex() {
         let text =  tabParagraphs[p].getText().trim();
         let coreIdea = '';
 
-        if (text.match(/^[A-Z\- ]+\s+\/[^\/]+\/\s+[⭐\s]+$/i)) { // word + IPA + stars
+        // word + IPA + short note (optional) + stars
+        if (text.match(/^[A-Z\- ]+\s+\/[^\/]+\/\s*[^⭐]*[⭐\s]+$/i)) {
 
           const textParts = text.split('/')
           const word = textParts[0].trim();
