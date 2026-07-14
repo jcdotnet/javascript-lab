@@ -79,8 +79,8 @@ function updateWordIndex() {
 
               if (p + 1 < tabParagraphs.length) {
                 const textBelow = tabParagraphs[p + 1].getText().trim();
-                if (textBelow.startsWith('💡') || textBelow.startsWith('🧠'))
-                  coreIdea = ' (' + textBelow.replace(/^[💡🧠]+\s*/, '') + ')';
+                if (textBelow.startsWith('💡') || textBelow.startsWith('🧠') || textBelow.startsWith('🔊')) 
+                  coreIdea = ' (' + textBelow.replace(/^[💡🧠🔊]+\s*/, '') + ')';
               }
 
               foundWords.push({
