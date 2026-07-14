@@ -118,8 +118,8 @@ function updateWordIndex() {
       const textBefore = textElement.getText().substring(0, start).trim();
       const textAfter = textElement.getText().substring(end + 1).trim();
 
-      const isolatedWord = (textBefore.endsWith("|") || textBefore.endsWith('WORD INDEX')) &&
-        textAfter.startsWith('|') || textAfter.startsWith('(');
+      const isolatedWord = (textBefore.endsWith('|') || textBefore.endsWith('WORD INDEX')) &&
+        (textAfter.startsWith('|') || textAfter.startsWith('('));
 
       if (isolatedWord) {
         const url = 'https://docs.google.com/document/d/' + doc.getId() + '/edit?tab=' + foundWord.tabId;
