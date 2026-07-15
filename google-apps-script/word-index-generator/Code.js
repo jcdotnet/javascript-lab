@@ -66,10 +66,10 @@ function updateWordIndex() {
         let text =  tabParagraphs[p].getText().trim();
         let coreIdea = '';
 
-        // word + IPA + short note (optional) + stars
-        if (text.match(/^[A-Z\- ]+\s+\/[^\/]+\/\s*[^⭐]*[⭐\s]+$/i)) {
-
-          const textParts = text.split('/')
+        // WORD in uppercase + /IPA - optional/ + (short note - optional) + stars
+        if (text.match(/^[A-Z\- ]+(\s+\/[^\/]+\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
+          
+          const textParts = text.split(/[\/(⭐]/); // text.split('/') // IPA is optional now   
           const word = textParts[0].trim();
 
           if (word && word.length > 2 && word.length < MAX_WORD_SIZE) {
