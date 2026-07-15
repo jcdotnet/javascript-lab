@@ -1,4 +1,5 @@
 const MAX_WORD_SIZE = 20;
+const MIN_WORD_SIZE = 2;
 
 function onOpen() {
   const ui = DocumentApp.getUi();
@@ -72,7 +73,7 @@ function updateWordIndex() {
           const textParts = text.split(/[\/(⭐]/); // text.split('/') // IPA is optional now   
           const word = textParts[0].trim();
 
-          if (word && word.length > 2 && word.length < MAX_WORD_SIZE) {
+          if (word && word.length >= MIN_WORD_SIZE && word.length <= MAX_WORD_SIZE) {
             if (word === word.toUpperCase()) {
 
               if (seenWords.has(word)) continue;
