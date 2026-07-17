@@ -4,35 +4,44 @@ const MIN_WORD_SIZE = 2;
 function onOpen() {
   const ui = DocumentApp.getUi();
   ui.createMenu('Tools')
-    .addItem('Update Word Index', 'updateWordIndex')
+    .addItem('Update Indices', 'updateIndexes')
     .addToUi();
 }
 
-function updateWordIndex() {
+function updateIndexes() {
   const doc = DocumentApp.getActiveDocument();
-  const foundWords = [];
 
-  const tabs = doc.getTabs(); // reads only principal tabs
+  const tabs = doc.getTabs(); // reads only principal tabs (indices are always inside them)
   const allTabs = [];
 
-  let indexTab = null;
-  let indexParagraph = null;
+  const indexes = {
+    words: { title: 'WORD INDEX', tab: null, paragraph: null, tabId: null, items: [] },
+    idioms: { title: 'EXPRESSIONS INDEX', tab: null, paragraph: null, tabId: null, items: [] }
+  };
 
   for (const tab of tabs) {
-    allTabs.push(tab);
+    allTabs.push({
+      tab: tab,
+      parentId: null
+    });
 
-    if (!indexTab) {
+    if (!indexes.words.tab || !indexes.idioms.tab) {
       try {
         const paragraphs = tab.asDocumentTab().getBody().getParagraphs();
         for (const paragraph of paragraphs) {
-          if (paragraph.getText().trim().startsWith('WORD INDEX')) {
-            indexTab = tab;
-            indexParagraph = paragraph;
-            break;
+          const text = paragraph.getText().trim();
+          for (const index of Object.values(indexes)) {
+
+            if (!index.tab && text.startsWith(index.title)) {
+              index.tab = tab;
+              index.paragraph = paragraph;
+              index.tabId = tab.getId();
+              break;
+            }
           }
         }
       } catch (error) {
-        console.error('Skipping non-document or unreadable tab:', tab.getTitle());
+        console.error('Error reading tab', tab.getTitle());
       }
     }
 
@@ -40,37 +49,41 @@ function updateWordIndex() {
       const subTabs = tab.getChildTabs();
       if (subTabs && subTabs.length > 0) {
         for (const subTab of subTabs) {
-          allTabs.push(subTab);
+          allTabs.push({
+            tab: subTab,
+            parentId: tab.getId()
+          });
         }
       }
     } catch (error) {
-      console.error('Error reading tabs', error);
+      console.error('Error reading children tabs', error);
     }
   }
 
-  if (!indexParagraph) {
-    DocumentApp.getUi().alert('Please create a paragraph with the exact index title: WORD INDEX');
+  if (!indexes.words.tab || !indexes.idioms.tab) {
+    DocumentApp.getUi().alert('Required index titles not found in the document:\nWORD INDEX\nEXPRESSIONS INDEX');
     return;
   }
 
   const seenWords = new Set();
 
-  for (const tab of allTabs) {
+  for (const { parentId, tab } of allTabs) {
 
-    if (tab.getId() === indexTab.getId()) continue;
-
+    if (tab.getId() === indexes.words.tabId || tab.getId() === indexes.idioms.tabId) {
+      continue;
+    }
     try {
       const tabBody = tab.asDocumentTab().getBody();
       const tabParagraphs = tabBody.getParagraphs();
 
       for (let p = 0; p < tabParagraphs.length; p++) {
-        let text =  tabParagraphs[p].getText().trim();
+        let text = tabParagraphs[p].getText().trim();
         let coreIdea = '';
 
         // WORD in uppercase + /IPA - optional/ + (short note - optional) + stars
-        if (text.match(/^[A-Z\- ]+(\s+\/[^\/]+\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
+        if (text.match(/^[A-Z\-\/ ]+(\s+\/[^A-Z\/]+[^A-Z]*\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
           
-          const textParts = text.split(/[\/(⭐]/); // text.split('/') // IPA is optional now   
+          const textParts = text.split(/\s+\/[^A-Z\/]+[^A-Z]*\/|\s*[(⭐]/);
           const word = textParts[0].trim();
 
           if (word && word.length >= MIN_WORD_SIZE && word.length <= MAX_WORD_SIZE) {
@@ -80,11 +93,13 @@ function updateWordIndex() {
 
               if (p + 1 < tabParagraphs.length) {
                 const textBelow = tabParagraphs[p + 1].getText().trim();
-                if (textBelow.startsWith('💡') || textBelow.startsWith('🧠') || textBelow.startsWith('🔊')) 
+                if (textBelow.startsWith('💡') || textBelow.startsWith('🧠') || textBelow.startsWith('🔊'))
                   coreIdea = ' (' + textBelow.replace(/^[💡🧠🔊]+\s*/, '') + ')';
               }
 
-              foundWords.push({
+              const indexType = parentId === indexes.idioms.tabId ? 'idioms' : 'words';
+
+              indexes[indexType].items.push({
                 text: word,
                 coreIdea,
                 tabId: tab.getId()
@@ -99,37 +114,42 @@ function updateWordIndex() {
     }
   }
 
-  foundWords.sort((a, b) => a.text.localeCompare(b.text));
+  for (const index of Object.values(indexes)) {
+    const items = index.items;
+    const indexParagraph = index.paragraph;
 
-  let indexOutput = 'WORD INDEX\n\n'; 
-  for (const foundWord of foundWords) {
-    indexOutput += foundWord.text + foundWord.coreIdea + '    |    ';
-  }
+    items.sort((a, b) => a.text.localeCompare(b.text));
 
-  indexParagraph.setText(indexOutput);
+    let indexOutput = index.title + '\n\n';
+    for (const item of items) {
+      indexOutput += item.text + item.coreIdea + '    |    ';
+    }
+    indexParagraph.setText(indexOutput);
 
-  for (const foundWord of foundWords) {
-    let searchResult = indexParagraph.findText(foundWord.text);
+    for (const item of items) {
 
-    while (searchResult) {
-      const start = searchResult.getStartOffset();
-      const end = searchResult.getEndOffsetInclusive();
-      const textElement = searchResult.getElement().asText();
+      let searchResult = indexParagraph.findText(item.text);
 
-      const textBefore = textElement.getText().substring(0, start).trim();
-      const textAfter = textElement.getText().substring(end + 1).trim();
+      while (searchResult) {
+        const start = searchResult.getStartOffset();
+        const end = searchResult.getEndOffsetInclusive();
+        const textElement = searchResult.getElement().asText();
 
-      const isolatedWord = (textBefore.endsWith('|') || textBefore.endsWith('WORD INDEX')) &&
-        (textAfter.startsWith('|') || textAfter.startsWith('('));
+        const textBefore = textElement.getText().substring(0, start).trim();
+        const textAfter = textElement.getText().substring(end + 1).trim();
 
-      if (isolatedWord) {
-        const url = 'https://docs.google.com/document/d/' + doc.getId() + '/edit?tab=' + foundWord.tabId;
-        textElement.setLinkUrl(start, end, url);
-        break;
+        const isolatedWord = (textBefore.endsWith('|') || textBefore.endsWith(index.title)) &&
+          (textAfter.startsWith('|') || textAfter.startsWith('('));
+
+        if (isolatedWord) {
+          const url = 'https://docs.google.com/document/d/' + doc.getId() + '/edit?tab=' + item.tabId;
+          textElement.setLinkUrl(start, end, url);
+          break;
+        }
+        searchResult = indexParagraph.findText(item.text, searchResult);
       }
-      searchResult = indexParagraph.findText(foundWord.text, searchResult);
     }
   }
 
-  DocumentApp.getUi().alert('Word Index Updated!');
+  DocumentApp.getUi().alert('Word & Expressions Indices Updated!');
 }
