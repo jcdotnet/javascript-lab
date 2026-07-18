@@ -1,4 +1,4 @@
-const MAX_WORD_SIZE = 20;
+const MAX_WORD_SIZE = 50;
 const MIN_WORD_SIZE = 2;
 
 function onOpen() {
@@ -80,32 +80,34 @@ function updateIndexes() {
         let text = tabParagraphs[p].getText().trim();
         let coreIdea = '';
 
-        // WORD in uppercase + /IPA - optional/ + (short note - optional) + stars
-        if (text.match(/^[A-Z\-\/ ]+(\s+\/[^A-Z\/]+[^A-Z]*\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
-          
-          const textParts = text.split(/\s+\/[^A-Z\/]+[^A-Z]*\/|\s*[(⭐]/);
+        // Format: WORD in uppercase + /IPA - optional/ + (short note - optional) + stars
+        // WORD in uppercase may contain slashes, spaces, or an embedded note in parentheses
+        // WORD in uppercase examples: ABIDE | BE/GET UP TO SPEED | BE IN A (pretty) PICKLE
+        // Simplify only if all lines starting with WORD and ending with stars are entries
+        // if (text.match(/^[A-Z\-\/ ]+.*[⭐\s]+$/)) {
+        if (text.match(/^[A-Z\-\/ ]+(\s*\([a-z ]+\))?\s*[A-Z\-\/ ]*(\s+\/[^A-Z\/]+[^A-Z]*\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
+
+          const textParts = text.split(/\s+\/[^A-Z\/]+[^A-Z]*\/|\s*\((?=[^)]*\)[\s⭐]*$)|\s*⭐/);
           const word = textParts[0].trim();
 
           if (word && word.length >= MIN_WORD_SIZE && word.length <= MAX_WORD_SIZE) {
-            if (word === word.toUpperCase()) {
 
-              if (seenWords.has(word)) continue;
+            if (seenWords.has(word)) continue;
 
-              if (p + 1 < tabParagraphs.length) {
-                const textBelow = tabParagraphs[p + 1].getText().trim();
-                if (textBelow.startsWith('💡') || textBelow.startsWith('🧠') || textBelow.startsWith('🔊'))
-                  coreIdea = ' (' + textBelow.replace(/^[💡🧠🔊]+\s*/, '') + ')';
-              }
-
-              const indexType = parentId === indexes.idioms.tabId ? 'idioms' : 'words';
-
-              indexes[indexType].items.push({
-                text: word,
-                coreIdea,
-                tabId: tab.getId()
-              });
-              seenWords.add(word);
+            if (p + 1 < tabParagraphs.length) {
+              const textBelow = tabParagraphs[p + 1].getText().trim();
+              if (textBelow.startsWith('💡') || textBelow.startsWith('🧠') || textBelow.startsWith('🔊'))
+                coreIdea = ' (' + textBelow.replace(/^[💡🧠🔊]+\s*/, '') + ')';
             }
+
+            const indexType = parentId === indexes.idioms.tabId ? 'idioms' : 'words';
+
+            indexes[indexType].items.push({
+              text: word,
+              coreIdea,
+              tabId: tab.getId()
+            });
+            seenWords.add(word);
           }
         }
       }
@@ -128,7 +130,8 @@ function updateIndexes() {
 
     for (const item of items) {
 
-      let searchResult = indexParagraph.findText(item.text);
+      const escapedItemText = item.text.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+      let searchResult = indexParagraph.findText(escapedItemText);
 
       while (searchResult) {
         const start = searchResult.getStartOffset();
