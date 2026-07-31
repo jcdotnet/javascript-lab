@@ -16,7 +16,7 @@ function updateIndexes() {
 
   const indexes = {
     words: { title: 'WORD INDEX', tab: null, paragraph: null, tabId: null, items: [] },
-    idioms: { title: 'EXPRESSIONS INDEX', tab: null, paragraph: null, tabId: null, items: [] }
+    idioms: { title: 'IDIOMS INDEX', tab: null, paragraph: null, tabId: null, items: [] }
   };
 
   for (const tab of tabs) {
@@ -61,7 +61,7 @@ function updateIndexes() {
   }
 
   if (!indexes.words.tab || !indexes.idioms.tab) {
-    DocumentApp.getUi().alert('Required index titles not found in the document:\nWORD INDEX\nEXPRESSIONS INDEX');
+    DocumentApp.getUi().alert('Required index titles not found in the document:\nWORD INDEX\nIDIOMS INDEX');
     return;
   }
 
@@ -84,8 +84,8 @@ function updateIndexes() {
         // WORD in uppercase may contain slashes, spaces, or an embedded note in parentheses
         // WORD in uppercase examples: ABIDE | BE/GET UP TO SPEED | BE IN A (pretty) PICKLE
         // Simplify only if all lines starting with WORD and ending with stars are entries
-        // if (text.match(/^[A-Z\-\/ ]+.*[⭐\s]+$/)) {
-        if (text.match(/^[A-Z\-\/ ]+(\s*\([a-z ]+\))?\s*[A-Z\-\/ ]*(\s+\/[^A-Z\/]+[^A-Z]*\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
+        // if (text.match(/^[A-Z\-\/'’ ]+.*[⭐\s]+$/)) {
+        if (text.match(/^[A-Z\-\/'’ ]+(\s*\([a-z ]+\))?\s*[A-Z\-\/ ]*(\s+\/[^A-Z\/]+[^A-Z]*\/)?(\s+\([^)]*\))?\s*[⭐\s]+$/)) {
 
           const textParts = text.split(/\s+\/[^A-Z\/]+[^A-Z]*\/|\s*\((?=[^)]*\)[\s⭐]*$)|\s*⭐/);
           const word = textParts[0].trim();
@@ -154,5 +154,5 @@ function updateIndexes() {
     }
   }
 
-  DocumentApp.getUi().alert('Word & Expressions Indices Updated!');
+  DocumentApp.getUi().alert('Word & Idioms Indices Updated!');
 }
